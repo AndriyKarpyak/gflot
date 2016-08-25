@@ -154,7 +154,9 @@ public class PlotWithOverviewModel
         private double getWindowMinX()
         {
             double x = selection[0];
-            if ( x == overviewHandler.getData().getX( 0 ) )
+            SeriesData data = overviewHandler.getData();
+            int size = data.length();
+            if ( size > 0 && x == data.getX( 0 ) )
             {
                 return firstDataPoint.getX();
             }
