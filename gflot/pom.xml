@@ -29,7 +29,7 @@
   <groupId>com.googlecode.gflot</groupId>
   <artifactId>gflot</artifactId>
   <packaging>jar</packaging>
-  <version>3.3.0</version>
+  <version>3.3.0-KKBUILD_1.0</version>
 
   <name>GFlot :: API</name>
   <description>A GWT module that provides widgets for creation and manipulation of charts based on the Flot JavaScript
@@ -46,10 +46,10 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:git://github.com/nmorel/gflot.git</connection>
-    <developerConnection>scm:git:git@github.com:nmorel/gflot.git</developerConnection>
-    <url>https://github.com/nmorel/gflot</url>
-    <tag>3.3.0</tag>
+    <connection>scm:git:git://github.com/AndriyKarpyak/gflot.git</connection>
+    <developerConnection>scm:git:git@github.com:AndriyKarpyak/gflot.git</developerConnection>
+    <url>https://github.com/AndriyKarpyak/gflot</url>
+    <tag>3.3.0-branch</tag>
   </scm>
 
   <developers>
@@ -87,7 +87,7 @@
 
   <issueManagement>
     <system>GitHub</system>
-    <url>https://github.com/nmorel/gflot/issues</url>
+    <url>https://github.com/AndriyKarpyak/gflot/issues</url>
   </issueManagement>
 
   <properties>

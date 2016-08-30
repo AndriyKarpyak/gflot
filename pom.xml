@@ -20,7 +20,7 @@
   <groupId>com.googlecode.gflot</groupId>
   <artifactId>gflot-parent</artifactId>
   <packaging>pom</packaging>
-  <version>3.3.0</version>
+  <version>3.3.0-KKBUILD_1.0</version>
 
   <name>GFlot :: Parent</name>
   <description>Parent pom used for release</description>
@@ -35,10 +35,10 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:git://github.com/nmorel/gflot.git</connection>
-    <developerConnection>scm:git:git@github.com:nmorel/gflot.git</developerConnection>
-    <url>https://github.com/nmorel/gflot</url>
-    <tag>3.3.0</tag>
+    <connection>scm:git:git://github.com/AndriyKarpyak/gflot.git</connection>
+    <developerConnection>scm:git:git@github.com:AndriyKarpyak/gflot.git</developerConnection>
+    <url>https://github.com/AndriyKarpyak/gflot</url>
+    <tag>3.3.0-branch</tag>
   </scm>
 
   <developers>
