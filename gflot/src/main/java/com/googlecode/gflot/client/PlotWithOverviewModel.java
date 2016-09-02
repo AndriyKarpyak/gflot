@@ -26,11 +26,11 @@ package com.googlecode.gflot.client;
 
 import java.util.List;
 
-
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.googlecode.gflot.client.options.Range;
 import com.googlecode.gflot.client.util.Algorithm;
 
 /**
@@ -73,6 +73,16 @@ public class PlotWithOverviewModel
                 firstDataPoint = datapoint;
             }
             lastDataPoint = datapoint;
+            
+            if (PlotWithOverviewModel.this.dataMinX == null || PlotWithOverviewModel.this.dataMinX > firstDataPoint.getX())
+            	PlotWithOverviewModel.this.dataMinX = firstDataPoint.getX();
+            if (PlotWithOverviewModel.this.dataMaxX == null || PlotWithOverviewModel.this.dataMaxX < lastDataPoint.getX())
+            	PlotWithOverviewModel.this.dataMaxX = lastDataPoint.getX();
+
+            if (PlotWithOverviewModel.this.dataMinY == null || PlotWithOverviewModel.this.dataMinY > firstDataPoint.getY())
+            	PlotWithOverviewModel.this.dataMinY = firstDataPoint.getY();
+            if (PlotWithOverviewModel.this.dataMaxY == null || PlotWithOverviewModel.this.dataMaxY < lastDataPoint.getY())
+            	PlotWithOverviewModel.this.dataMaxY = lastDataPoint.getY();
         }
 
         @Override
@@ -186,9 +196,19 @@ public class PlotWithOverviewModel
             return overviewHandler.getSeries();
         }
 
+        public SeriesHandler getOverviewSeriesHandler()
+        {
+            return overviewHandler;
+        }
+        
         public Series getWindowSeries()
         {
             return windowHandler.getSeries();
+        }
+        
+        public SeriesHandler getWindowSeriesHandler()
+        {
+            return windowHandler;
         }
 
         @Override
@@ -309,6 +329,10 @@ public class PlotWithOverviewModel
 
     private final PlotModel windowModel;
     private final PlotModel overviewModel;
+    private Double dataMinX;
+    private Double dataMaxX;
+    private Double dataMinY;
+    private Double dataMaxY;
     private final double[] selection = new double[2];
 
     public PlotWithOverviewModel()
@@ -378,6 +402,20 @@ public class PlotWithOverviewModel
     public double[] getSelection()
     {
         return selection;
+    }
+
+    public Range getXDataRange() {
+    	if (dataMinX == null || dataMaxX == null) {
+			return null;
+		}
+    	return Range.of(dataMinX, dataMaxX);
+    }
+
+    public Range getYDataRange() {
+    	if (dataMinY == null || dataMaxY == null) {
+			return null;
+		}
+    	return Range.of(dataMinY, dataMaxY);
     }
 
     @Override

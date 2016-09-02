@@ -11,11 +11,13 @@ import com.google.gwt.user.client.ui.Widget;
 import com.googlecode.gflot.client.DataPoint;
 import com.googlecode.gflot.client.PlotWithOverview;
 import com.googlecode.gflot.client.PlotWithOverviewModel;
+import com.googlecode.gflot.client.PlotWithOverviewModel.PlotWithOverviewSeriesHandler;
 import com.googlecode.gflot.client.Series;
 import com.googlecode.gflot.client.SeriesHandler;
 import com.googlecode.gflot.client.options.GlobalSeriesOptions;
 import com.googlecode.gflot.client.options.LineSeriesOptions;
 import com.googlecode.gflot.client.options.PlotOptions;
+import com.googlecode.gflot.client.options.Range;
 import com.googlecode.gflot.examples.client.examples.DefaultActivity;
 import com.googlecode.gflot.examples.client.resources.Resources;
 import com.googlecode.gflot.examples.client.source.SourceAnnotations.GFlotExamplesData;
@@ -65,8 +67,9 @@ public class OverviewExample
 
         generateRandomData();
 
-        plot.setLinearSelection( 150, 199 );
-
+        Range xDataRange = plot.getModel().getXDataRange();
+		plot.setLinearSelection( xDataRange.getFrom(), xDataRange.getTo() );
+		
         return binder.createAndBindUi( this );
     }
 
@@ -81,7 +84,29 @@ public class OverviewExample
     {
         plot.getModel().removeAllSeries();
         generateRandomData();
+        Range xDataRange = plot.getModel().getXDataRange();
         plot.redraw();
+		plot.setLinearSelection( xDataRange.getFrom(), xDataRange.getTo() );
+    }
+
+    /**
+     * On click on insert button
+     * 
+     * @param e event
+     */
+    @GFlotExamplesSource
+    @UiHandler( "insert" )
+    void onClickInsert( ClickEvent e )
+    {
+    	int size = Random.nextInt(500);
+        for ( int i = 1; i < (size > 10 ? size : 200); i++ )
+        {
+            for ( PlotWithOverviewSeriesHandler series : plot.getModel().getHandlers() )
+            {
+                series.getWindowSeriesHandler().add( DataPoint.of( i, 1.5 + Random.nextDouble(), 1.5 - Random.nextDouble() ) );
+            }
+        }
+        plot.getWindowPlot().redraw();
     }
 
     /**
@@ -95,7 +120,8 @@ public class OverviewExample
         {
             plot.getModel().addSeries( Series.of( "Random Series " + i ) );
         }
-        for ( int i = 1; i < 200; i++ )
+        int size = Random.nextInt(500);
+        for ( int i = 1; i < (size > 10 ? size : 200); i++ )
         {
             for ( SeriesHandler series : plot.getModel().getHandlers() )
             {

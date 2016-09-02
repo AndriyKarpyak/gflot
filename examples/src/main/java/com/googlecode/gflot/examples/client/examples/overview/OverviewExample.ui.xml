@@ -16,6 +16,7 @@
 
     <p>
       <g:Button ui:field='generate'>Generate</g:Button>
+      <g:Button ui:field='insert'>Insert</g:Button>
     </p>
   </g:HTMLPanel>
 </ui:UiBinder>
