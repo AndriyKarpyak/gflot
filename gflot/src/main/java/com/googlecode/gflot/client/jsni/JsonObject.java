@@ -147,4 +147,8 @@ public class JsonObject
         return JSON.stringify(this);
     }-*/;
 
+    public final native JsonObject copy()
+    /*-{
+        return JSON.parse(JSON.stringify(this));
+    }-*/;
 }

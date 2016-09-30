@@ -44,7 +44,11 @@ public class FixedSizeSeriesDataStrategy
         this.capacity = capacity;
     }
 
-    @Override
+    public int getCapacity() {
+		return capacity;
+	}
+
+	@Override
     public void add( DataPoint dataPoint )
     {
         int currentSize = data.length();

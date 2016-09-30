@@ -71,4 +71,18 @@ public final class PlotModelStrategy
         return slidingWindowStrategy( capacity, 0 );
     }
 
+	public static SeriesDataStrategy copy(SeriesDataStrategy strategy) {
+		if (strategy instanceof DownsamplingSeriesDataStrategy) {
+			return new DownsamplingSeriesDataStrategy( ((DownsamplingSeriesDataStrategy)strategy).getCapacity() );
+		} else if (strategy instanceof FixedSpanDownsamplingSeriesDataStrategy) {
+			return new FixedSpanDownsamplingSeriesDataStrategy( ((FixedSpanDownsamplingSeriesDataStrategy)strategy).getCapacity(), ((FixedSpanDownsamplingSeriesDataStrategy)strategy).getMaximumSpan() );
+		} else if (strategy instanceof FixedSizeSeriesDataStrategy) {
+			return new FixedSizeSeriesDataStrategy( ((FixedSizeSeriesDataStrategy)strategy).getCapacity() );
+		} else if (strategy instanceof FixedSpanFixedSizeSeriesDataStrategy) {
+			return new FixedSpanFixedSizeSeriesDataStrategy( ((FixedSpanFixedSizeSeriesDataStrategy)strategy).getCapacity(), ((FixedSpanFixedSizeSeriesDataStrategy)strategy).getMaximumSpan() );
+		} else {
+			return new DefaultSeriesDataStrategy();
+		}
+	}
+
 }

@@ -37,6 +37,7 @@ import com.googlecode.gflot.client.event.PlotLoadEvent.Handler;
 import com.googlecode.gflot.client.event.PlotSelectedListener;
 import com.googlecode.gflot.client.event.PlotSelectingListener;
 import com.googlecode.gflot.client.event.PlotUnselectedListener;
+import com.googlecode.gflot.client.event.PlotZoomListener;
 import com.googlecode.gflot.client.jsni.Plot;
 import com.googlecode.gflot.client.options.GlobalSeriesOptions;
 import com.googlecode.gflot.client.options.LegendOptions;
@@ -51,7 +52,7 @@ import com.googlecode.gflot.client.options.SelectionOptions.SelectionMode;
  */
 public class PlotWithOverview
     extends Composite
-    implements PlotWidget, PlotSelectedListener
+    implements PlotWidget
 {
     public static final int DEFAULT_OVERVIEW_HEIGHT = 100; // px
 
@@ -225,6 +226,20 @@ public class PlotWithOverview
         return windowPlot.getWidth();
     }
 
+	public void refresh()
+	{
+		overviewPlot.redraw();
+		
+    	Double selectionFrom = windowPlot.getAxes().getX().getMinimumValue();
+		Double selectionTo = windowPlot.getAxes().getX().getMaximumValue();
+		
+		Double dataFrom = model.getXDataRange().getFrom();
+		Double dataTo = model.getXDataRange().getTo();
+		
+		Range xRange = Range.of(selectionFrom >= dataFrom ? selectionFrom : dataFrom , selectionTo <= dataTo ? selectionTo : dataTo);
+        overviewPlot.setSelection( PlotSelectionArea.create().setX( xRange ) );
+	}
+
     public void redraw()
     {
         double[] selection = model.getSelection();
@@ -282,7 +297,30 @@ public class PlotWithOverview
     }
 
     /* ------------------------- SelectionListener API -- */
-    public void onPlotSelected( PlotSelectionArea area )
+    public void onWindowPlotSelected( PlotSelectionArea area )
+    {
+    	PlotSelectionArea frozzenSelection = overviewPlot.getSelection();
+    	
+        final Range xRange = area.getX();
+
+        overviewPlot.setSelection(PlotSelectionArea.create().setX(xRange), true);
+        
+        if (overviewPlot.getSelection() != null) {
+	        model.setSelection( xRange.getFrom(), xRange.getTo(), new Command()
+	        {
+	            public void execute()
+	            {
+	                windowPlot.redraw();
+	                overviewPlot.setSelection(PlotSelectionArea.create().setX(xRange), true);
+	            }
+	        } );
+        } else {
+        	windowPlot.clearSelection();
+        	overviewPlot.setSelection(frozzenSelection, true);
+        }
+    }
+    
+    public void onOverviewPlotSelected( PlotSelectionArea area )
     {
         Range xRange = area.getX();
         model.setSelection( xRange.getFrom(), xRange.getTo(), new Command()
@@ -294,6 +332,30 @@ public class PlotWithOverview
         } );
     }
 
+    /* ------------------------- ZoomListener API -- */
+    public void onWindowPlotZoom(Plot plot) 
+    {
+    	Double selectionFrom = new Double(windowPlot.getAxes().getX().getMinimumValue().intValue());
+		Double selectionTo = windowPlot.getAxes().getX().getMaximumValue();
+		
+		Double dataFrom = model.getXDataRange().getFrom();
+		Double dataTo = model.getXDataRange().getTo();
+		
+		final Range xRange = Range.of(selectionFrom >= dataFrom ? selectionFrom : dataFrom , selectionTo <= dataTo ? selectionTo : dataTo);
+                
+        PlotSelectionArea frozzenSelection = overviewPlot.getSelection();
+        
+        overviewPlot.setSelection(PlotSelectionArea.create().setX(xRange));
+        if (overviewPlot.getSelection() == null) {
+        	overviewPlot.setSelection(frozzenSelection);
+        }
+	}
+    
+    public void onOverviewPlotZoom(Plot plot) 
+    {
+		// not supporting zooming on overview model
+	}
+    
     /* -------------------------- Helper Methods -- */
     private Widget createUi()
     {
@@ -310,7 +372,34 @@ public class PlotWithOverview
 
     protected void setupPlots()
     {
-        overviewPlot.addSelectedListener( this );
+    	windowPlot.addSelectedListener( new PlotSelectedListener() {
+			
+			@Override
+			public void onPlotSelected(PlotSelectionArea area) {
+				onWindowPlotSelected( area );
+			}
+		} );
+        overviewPlot.addSelectedListener( new PlotSelectedListener() {
+			
+			@Override
+			public void onPlotSelected(PlotSelectionArea area) {
+				onOverviewPlotSelected( area );
+			}
+		} );
+        windowPlot.addZoomListener(new PlotZoomListener() {
+			
+			@Override
+			public void onPlotZoom(Plot plot) {
+				onWindowPlotZoom(plot);
+			}
+		});
+        overviewPlot.addZoomListener(new PlotZoomListener() {
+			
+			@Override
+			public void onPlotZoom(Plot plot) {
+				onOverviewPlotZoom(plot);
+			}
+		});
     }
 
     @Override
@@ -324,5 +413,4 @@ public class PlotWithOverview
     {
         return getWindowPlot().getPlot();
     }
-
 }

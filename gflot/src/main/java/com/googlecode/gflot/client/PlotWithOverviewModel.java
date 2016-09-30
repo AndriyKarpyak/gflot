@@ -52,14 +52,16 @@ public class PlotWithOverviewModel
 
         public PlotWithOverviewSeriesHandler( Series series, SeriesDataStrategy strategy )
         {
-            provider = new AsyncDataProviderWrapper( new LocalDataProvider( strategy.getData() ) );
-            windowHandler = windowModel.addSeries( series, PlotModelStrategy.defaultStrategy() );
-            overviewHandler = overviewModel.addSeries( Series.create(), strategy );
+            provider = new AsyncDataProviderWrapper( new LocalDataProvider( PlotModelStrategy.defaultStrategy() ) );
+            windowHandler = windowModel.addSeries( ( Series ) series.copy(), PlotModelStrategy.copy(strategy) );
+            overviewHandler = overviewModel.addSeries( ( Series ) series.copy(), PlotModelStrategy.copy(strategy) );
         }
 
         @Override
         public void add( DataPoint datapoint )
         {
+        	provider.add( datapoint );
+        	
             overviewHandler.add( datapoint );
             if ( lockSelection && selection[1] < datapoint.getX() )
             {
@@ -74,15 +76,15 @@ public class PlotWithOverviewModel
             }
             lastDataPoint = datapoint;
             
-            if (PlotWithOverviewModel.this.dataMinX == null || PlotWithOverviewModel.this.dataMinX > firstDataPoint.getX())
-            	PlotWithOverviewModel.this.dataMinX = firstDataPoint.getX();
-            if (PlotWithOverviewModel.this.dataMaxX == null || PlotWithOverviewModel.this.dataMaxX < lastDataPoint.getX())
-            	PlotWithOverviewModel.this.dataMaxX = lastDataPoint.getX();
+            if (PlotWithOverviewModel.this.dataMinX == null || PlotWithOverviewModel.this.dataMinX > datapoint.getX())
+            	PlotWithOverviewModel.this.dataMinX = datapoint.getX();
+            if (PlotWithOverviewModel.this.dataMaxX == null || PlotWithOverviewModel.this.dataMaxX < datapoint.getX())
+            	PlotWithOverviewModel.this.dataMaxX = datapoint.getX();
 
-            if (PlotWithOverviewModel.this.dataMinY == null || PlotWithOverviewModel.this.dataMinY > firstDataPoint.getY())
-            	PlotWithOverviewModel.this.dataMinY = firstDataPoint.getY();
-            if (PlotWithOverviewModel.this.dataMaxY == null || PlotWithOverviewModel.this.dataMaxY < lastDataPoint.getY())
-            	PlotWithOverviewModel.this.dataMaxY = lastDataPoint.getY();
+            if (PlotWithOverviewModel.this.dataMinY == null || PlotWithOverviewModel.this.dataMinY > datapoint.getY()) 
+            	PlotWithOverviewModel.this.dataMinY = datapoint.getY();
+            if (PlotWithOverviewModel.this.dataMaxY == null || PlotWithOverviewModel.this.dataMaxY < datapoint.getY())
+            	PlotWithOverviewModel.this.dataMaxY = datapoint.getY();
         }
 
         @Override
@@ -234,23 +236,32 @@ public class PlotWithOverviewModel
 
     public interface DataProvider
     {
-        SeriesData getData( double x1, double x2 );
+    	void add(DataPoint datapoint);
+
+    	SeriesData getData( double x1, double x2 );
     }
 
     private class LocalDataProvider
         implements DataProvider
     {
 
-        private final SeriesData data;
+        private final SeriesDataStrategy strategy;
 
-        public LocalDataProvider( SeriesData data )
+        public LocalDataProvider( SeriesDataStrategy strategy )
         {
-            this.data = data;
+            this.strategy = strategy;
         }
-
+		
+        @Override
+		public void add(DataPoint datapoint) {
+        	strategy.add(datapoint);
+		}
+        
         @Override
         public SeriesData getData( double x1, double x2 )
         {
+        	SeriesData data = strategy.getData();
+
             if ( x2 < data.getX( 0 ) || x1 > data.getX( data.length() - 1 ) )
             {
                 return SeriesData.create();
@@ -272,7 +283,9 @@ public class PlotWithOverviewModel
 
     public interface AsyncDataProvider
     {
-        void getData( double x1, double x2, AsyncCallback<SeriesData> callback );
+    	void add(DataPoint datapoint);
+
+    	void getData( double x1, double x2, AsyncCallback<SeriesData> callback );
     }
 
     private class AsyncDataProviderWrapper
@@ -285,6 +298,11 @@ public class PlotWithOverviewModel
             this.provider = provider;
         }
 
+		@Override
+		public void add(DataPoint datapoint) {
+			provider.add( datapoint );
+		}
+		
         @Override
         public void getData( double x1, double x2, AsyncCallback<SeriesData> callback )
         {

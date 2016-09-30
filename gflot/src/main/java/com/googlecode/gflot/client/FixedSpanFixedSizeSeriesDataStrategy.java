@@ -39,8 +39,12 @@ public class FixedSpanFixedSizeSeriesDataStrategy
         super( capacity, seriesData );
         this.maximumSpan = maximumSpan;
     }
+    
+    public long getMaximumSpan() {
+		return maximumSpan;
+	}
 
-    @Override
+	@Override
     public void add( DataPoint dataPoint )
     {
         // The super class will observe the fixed capacity requirement

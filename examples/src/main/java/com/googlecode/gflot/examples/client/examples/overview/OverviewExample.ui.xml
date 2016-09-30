@@ -16,7 +16,15 @@
 
     <p>
       <g:Button ui:field='generate'>Generate</g:Button>
-      <g:Button ui:field='insert'>Insert</g:Button>
+      <g:Button ui:field='color1'>Color seriese one</g:Button>
+      <g:Button ui:field='color2'>Color seriese two</g:Button>
+      <g:Button ui:field='lock1'>Lock seriese one</g:Button>
+      <g:Button ui:field='lock2'>Lock seriese two</g:Button>
+      <g:Button ui:field='unlock'>Unlock serieses</g:Button>
+      <g:Button ui:field='zoomIn'>Zoom In</g:Button>
+      <g:Button ui:field='zoomOut'>Zoom Out</g:Button>
+      <g:Button ui:field='moveUp'>Move Up</g:Button>
+      <g:Button ui:field='moveDown'>Move Down</g:Button>
     </p>
   </g:HTMLPanel>
 </ui:UiBinder>

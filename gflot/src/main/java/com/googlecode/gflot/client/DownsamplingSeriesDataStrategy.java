@@ -49,8 +49,12 @@ public class DownsamplingSeriesDataStrategy
         super( data );
         this.capacity = capacity;
     }
+    
+    public int getCapacity() {
+		return capacity;
+	}
 
-    public void add( DataPoint dataPoint )
+	public void add( DataPoint dataPoint )
     {
         if ( downsamplingRate == 1 )
         {
@@ -75,6 +79,14 @@ public class DownsamplingSeriesDataStrategy
         }
     }
 
+    @Override
+    public void clear()
+    {
+        super.clear();
+        downsamplingRate = 1;
+        downSamplingBuffer.clear();
+    }
+    
     private void decimate()
     {
         downsamplingRate /= 2;
