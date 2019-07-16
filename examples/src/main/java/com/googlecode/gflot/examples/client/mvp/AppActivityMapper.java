@@ -7,6 +7,8 @@ import com.googlecode.gflot.examples.client.examples.bar.BarExample;
 import com.googlecode.gflot.examples.client.examples.bar.BarPlace;
 import com.googlecode.gflot.examples.client.examples.categories.CategoriesExample;
 import com.googlecode.gflot.examples.client.examples.categories.CategoriesPlace;
+import com.googlecode.gflot.examples.client.examples.dashedlines.DashedLinesExample;
+import com.googlecode.gflot.examples.client.examples.dashedlines.DashedLinesPlace;
 import com.googlecode.gflot.examples.client.examples.decimation.DecimationExample;
 import com.googlecode.gflot.examples.client.examples.decimation.DecimationPlace;
 import com.googlecode.gflot.examples.client.examples.errorbars.bar.ErrorBarsExample;
@@ -92,6 +94,7 @@ public class AppActivityMapper
 
     private Activity categoriesActivity;
 
+    private Activity dashedlinesActivity;
     public AppActivityMapper( Resources resources )
     {
         this.resources = resources;
@@ -264,6 +267,14 @@ public class AppActivityMapper
                 categoriesActivity = new CategoriesExample( resources );
             }
             return categoriesActivity;
+        }
+        if ( place instanceof DashedLinesPlace )
+        {
+            if ( null == dashedlinesActivity )
+            {
+            	dashedlinesActivity = new DashedLinesExample( resources );
+            }
+            return dashedlinesActivity;
         }
         return null;
     }

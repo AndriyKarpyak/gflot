@@ -23,6 +23,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.EventBus;
 import com.googlecode.gflot.examples.client.examples.bar.BarPlace;
 import com.googlecode.gflot.examples.client.examples.categories.CategoriesPlace;
+import com.googlecode.gflot.examples.client.examples.dashedlines.DashedLinesPlace;
 import com.googlecode.gflot.examples.client.examples.decimation.DecimationPlace;
 import com.googlecode.gflot.examples.client.examples.errorbars.bar.ErrorBarsPlace;
 import com.googlecode.gflot.examples.client.examples.export.ExportPlace;
@@ -121,6 +122,8 @@ public class MainView extends ResizeComposite implements Handler
     Hyperlink errorBarsLink;
     @UiField
     Hyperlink categoriesLink;
+    @UiField
+    Hyperlink dashedlinesLink;
     @UiField
     Anchor exampleLink;
     @UiField
@@ -297,6 +300,14 @@ public class MainView extends ResizeComposite implements Handler
             public boolean apply( Place place )
             {
                 return place instanceof CategoriesPlace;
+            }
+        } ) );
+        links.add( new Link( dashedlinesLink, new Predicate()
+        {
+            @Override
+            public boolean apply( Place place )
+            {
+                return place instanceof DashedLinesPlace;
             }
         } ) );
 

@@ -24,7 +24,6 @@
  */
 package com.googlecode.gflot.client;
 
-
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Element;
@@ -226,6 +225,12 @@ public class PlotWithOverview
         return windowPlot.getWidth();
     }
 
+	public void push() {
+        model.push();
+		windowPlot.redraw();
+        overviewPlot.redraw();
+	}
+	
 	public void refresh()
 	{
 		overviewPlot.redraw();
@@ -297,28 +302,45 @@ public class PlotWithOverview
     }
 
     /* ------------------------- SelectionListener API -- */
-    public void onWindowPlotSelected( PlotSelectionArea area )
-    {
-    	PlotSelectionArea frozzenSelection = overviewPlot.getSelection();
-    	
-        final Range xRange = area.getX();
+	public void onWindowPlotSelected(PlotSelectionArea area) {
+		
+		double min = -1;
+		double max = -1;
 
-        overviewPlot.setSelection(PlotSelectionArea.create().setX(xRange), true);
-        
-        if (overviewPlot.getSelection() != null) {
-	        model.setSelection( xRange.getFrom(), xRange.getTo(), new Command()
-	        {
-	            public void execute()
-	            {
-	                windowPlot.redraw();
-	                overviewPlot.setSelection(PlotSelectionArea.create().setX(xRange), true);
-	            }
-	        } );
-        } else {
-        	windowPlot.clearSelection();
-        	overviewPlot.setSelection(frozzenSelection, true);
-        }
-    }
+		for (PlotWithOverviewSeriesHandler handler : model.getHandlers()) {
+
+			SeriesData data = handler.getData(area.getX().getFrom(), area.getX().getTo(), true);
+			
+			if (data.length() > 1) {
+				
+				if (min == -1 || data.get(0).getX() <= min) {
+					min = data.get(0).getX();
+				}
+				
+				if (max == -1 || max <= data.get(data.length() - 1).getX()) {
+					max = data.get(data.length() - 1).getX();
+				}
+			} else {
+				windowPlot.clearSelection();
+				return;
+			}
+		}
+		
+		final PlotSelectionArea frozzenSelection = overviewPlot.getSelection();
+		final Range xRange = Range.of(min, max);
+
+		model.setSelection(xRange.getFrom(), xRange.getTo(), new Command() {
+			public void execute() {
+				windowPlot.redraw();
+				overviewPlot.setSelection(PlotSelectionArea.create().setX(xRange), true);
+				
+				if (overviewPlot.getSelection() == null) {
+					windowPlot.clearSelection();
+					overviewPlot.setSelection(frozzenSelection, true);
+				}
+			}
+		});
+	}
     
     public void onOverviewPlotSelected( PlotSelectionArea area )
     {
@@ -335,20 +357,22 @@ public class PlotWithOverview
     /* ------------------------- ZoomListener API -- */
     public void onWindowPlotZoom(Plot plot) 
     {
-    	Double selectionFrom = new Double(windowPlot.getAxes().getX().getMinimumValue().intValue());
-		Double selectionTo = windowPlot.getAxes().getX().getMaximumValue();
+//    	Double selectionFrom = new Double(windowPlot.getAxes().getX().getMinimumValue().intValue());
+//		Double selectionTo = windowPlot.getAxes().getX().getMaximumValue();
+//		
+//		Double dataFrom = model.getXDataRange().getFrom();
+//		Double dataTo = model.getXDataRange().getTo();
+//		
+//		onWindowPlotSelected(PlotSelectionArea.create().setX(Range.of(selectionFrom >= dataFrom ? selectionFrom : dataFrom , selectionTo <= dataTo ? selectionTo : dataTo)));
 		
-		Double dataFrom = model.getXDataRange().getFrom();
-		Double dataTo = model.getXDataRange().getTo();
-		
-		final Range xRange = Range.of(selectionFrom >= dataFrom ? selectionFrom : dataFrom , selectionTo <= dataTo ? selectionTo : dataTo);
-                
-        PlotSelectionArea frozzenSelection = overviewPlot.getSelection();
-        
-        overviewPlot.setSelection(PlotSelectionArea.create().setX(xRange));
-        if (overviewPlot.getSelection() == null) {
-        	overviewPlot.setSelection(frozzenSelection);
-        }
+//		final Range xRange = Range.of(selectionFrom >= dataFrom ? selectionFrom : dataFrom , selectionTo <= dataTo ? selectionTo : dataTo);
+//                
+//        PlotSelectionArea frozzenSelection = overviewPlot.getSelection();
+//        
+//        overviewPlot.setSelection(PlotSelectionArea.create().setX(xRange));
+//        if (overviewPlot.getSelection() == null) {
+//        	overviewPlot.setSelection(frozzenSelection);
+//        }
 	}
     
     public void onOverviewPlotZoom(Plot plot) 

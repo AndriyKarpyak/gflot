@@ -40,6 +40,11 @@ public final class PlotModelStrategy
         return new DefaultSeriesDataStrategy();
     }
 
+    public static SeriesDataStrategy lttbDownsamplingSeriesDataStrategy( final int threshold )
+    {
+    	return new LTTBDownsamplingSeriesDataStrategy( threshold );
+    }
+
     public static SeriesDataStrategy downSamplingStrategy( final int capacity )
     {
         return downSamplingStrategy( capacity, 0 );
@@ -71,18 +76,20 @@ public final class PlotModelStrategy
         return slidingWindowStrategy( capacity, 0 );
     }
 
-	public static SeriesDataStrategy copy(SeriesDataStrategy strategy) {
-		if (strategy instanceof DownsamplingSeriesDataStrategy) {
-			return new DownsamplingSeriesDataStrategy( ((DownsamplingSeriesDataStrategy)strategy).getCapacity() );
-		} else if (strategy instanceof FixedSpanDownsamplingSeriesDataStrategy) {
-			return new FixedSpanDownsamplingSeriesDataStrategy( ((FixedSpanDownsamplingSeriesDataStrategy)strategy).getCapacity(), ((FixedSpanDownsamplingSeriesDataStrategy)strategy).getMaximumSpan() );
-		} else if (strategy instanceof FixedSizeSeriesDataStrategy) {
-			return new FixedSizeSeriesDataStrategy( ((FixedSizeSeriesDataStrategy)strategy).getCapacity() );
-		} else if (strategy instanceof FixedSpanFixedSizeSeriesDataStrategy) {
-			return new FixedSpanFixedSizeSeriesDataStrategy( ((FixedSpanFixedSizeSeriesDataStrategy)strategy).getCapacity(), ((FixedSpanFixedSizeSeriesDataStrategy)strategy).getMaximumSpan() );
-		} else {
-			return new DefaultSeriesDataStrategy();
-		}
-	}
+    public static SeriesDataStrategy copy(SeriesDataStrategy strategy) {
+        if (strategy instanceof DownsamplingSeriesDataStrategy) {
+            return new DownsamplingSeriesDataStrategy(((DownsamplingSeriesDataStrategy) strategy).getCapacity());
+        } else if (strategy instanceof FixedSpanDownsamplingSeriesDataStrategy) {
+            return new FixedSpanDownsamplingSeriesDataStrategy(((FixedSpanDownsamplingSeriesDataStrategy) strategy).getCapacity(), ((FixedSpanDownsamplingSeriesDataStrategy) strategy).getMaximumSpan());
+        } else if (strategy instanceof FixedSizeSeriesDataStrategy) {
+            return new FixedSizeSeriesDataStrategy(((FixedSizeSeriesDataStrategy) strategy).getCapacity());
+        } else if (strategy instanceof FixedSpanFixedSizeSeriesDataStrategy) {
+            return new FixedSpanFixedSizeSeriesDataStrategy(((FixedSpanFixedSizeSeriesDataStrategy) strategy).getCapacity(), ((FixedSpanFixedSizeSeriesDataStrategy) strategy).getMaximumSpan());
+        } else if (strategy instanceof LTTBDownsamplingSeriesDataStrategy) {
+            return new LTTBDownsamplingSeriesDataStrategy(((LTTBDownsamplingSeriesDataStrategy) strategy).getThreshold());
+        } else {
+            return new DefaultSeriesDataStrategy();
+        }
+    }
 
 }

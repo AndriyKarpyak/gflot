@@ -14,7 +14,7 @@ import com.googlecode.gflot.client.Pan;
 import com.googlecode.gflot.client.PlotModelStrategy;
 import com.googlecode.gflot.client.PlotWithOverview;
 import com.googlecode.gflot.client.PlotWithOverviewModel;
-import com.googlecode.gflot.client.PlotWithOverviewModel.PlotWithOverviewSeriesHandler;
+import com.googlecode.gflot.client.PlotWithOverviewSeriesHandler;
 import com.googlecode.gflot.client.Series;
 import com.googlecode.gflot.client.Zoom;
 import com.googlecode.gflot.client.options.AxesOptions;

@@ -121,6 +121,7 @@ public abstract class CommonSeriesOptions<T extends CommonSeriesOptions<?>>
     }
 
     private static final String LINE_SERIES_KEY = "lines";
+    private static final String DASHED_LINE_SERIES_KEY = "dashes";
     private static final String BAR_SERIES_KEY = "bars";
     private static final String POINTS_SERIES_KEY = "points";
     private static final String IMAGES_SERIES_KEY = "images";
@@ -134,12 +135,14 @@ public abstract class CommonSeriesOptions<T extends CommonSeriesOptions<?>>
     }
 
     /**
-     * Set global Line series options that will be used unless options are set directly to the series
+     * Set global Line series options that will be used unless options are set directly to the series.
+     * This option is excluding with Dashed line series options and setting one will remove other
      *
      * @return this instance of {@link CommonSeriesOptions}
      */
     public final T setLineSeriesOptions( LineSeriesOptions lineSeriesOptions )
     {
+    	clear( DASHED_LINE_SERIES_KEY );
         put( LINE_SERIES_KEY, lineSeriesOptions );
         return (T) this;
     }
@@ -150,6 +153,70 @@ public abstract class CommonSeriesOptions<T extends CommonSeriesOptions<?>>
     public final LineSeriesOptions getLineSeriesOptions()
     {
         return getJsObject( LINE_SERIES_KEY );
+    }
+
+    /**
+     * Set global Dashed line series options that will be used unless options are set directly to the series.
+     * This option is excluding with Line series options and setting one will remove other
+     *
+     * @return this instance of {@link CommonSeriesOptions}
+     */
+    public final T setDashedLineSeriesOptions( DashedLineSeriesOptions dashedLineSeriesOptions )
+    {
+    	// NOTE: Needed to bypass flot default fallback behavior to solid line.
+    	if (!hasKey(LINE_SERIES_KEY))
+    	{
+    		setLineSeriesOptions(LineSeriesOptions.create().setShow(false));
+		} else
+		{
+			getLineSeriesOptions().setShow(false);
+		}
+        put( DASHED_LINE_SERIES_KEY, dashedLineSeriesOptions );
+        return (T) this;
+    }
+    
+    /**
+     * @return global Dashed line series options
+     */
+    public final DashedLineSeriesOptions getDashedLineSeriesOptions()
+    {
+        return getJsObject( DASHED_LINE_SERIES_KEY );
+    }
+
+    /**
+     * Set global Dashed line or Line series options, depending on options type, that will be used unless options are set directly to the series.
+     *
+     * @return this instance of {@link CommonSeriesOptions}
+     */
+    public final T setAbstractLineSeriesOptions( AbstractLineSeriesOptions<?> abstractLineSeriesOptions )
+    {
+    	if ( LineSeriesOptions.TYPE_NAME.equals(abstractLineSeriesOptions.getString(AbstractLineSeriesOptions.TYPE_KEY)) ) 
+    	{
+    		abstractLineSeriesOptions.clear(AbstractLineSeriesOptions.TYPE_KEY);
+			setLineSeriesOptions( (LineSeriesOptions) abstractLineSeriesOptions );
+
+		} else if ( DashedLineSeriesOptions.TYPE_NAME.equals(abstractLineSeriesOptions.getString(AbstractLineSeriesOptions.TYPE_KEY)) ) 
+		{
+			abstractLineSeriesOptions.clear(AbstractLineSeriesOptions.TYPE_KEY);
+			setDashedLineSeriesOptions( (DashedLineSeriesOptions) abstractLineSeriesOptions );
+		}
+        return (T) this;
+    }
+
+    /**
+     * @return global Dashed line or Line series options depending which is actually set
+     */
+    public final AbstractLineSeriesOptions<?> getAbstractLineSeriesOptions()
+    {
+    	if ( hasKey( DASHED_LINE_SERIES_KEY ) ) 
+    	{
+    		return getDashedLineSeriesOptions();
+
+		} else if ( hasKey( LINE_SERIES_KEY ) ) 
+		{
+			return getLineSeriesOptions();
+		}
+        return null;
     }
 
     /**

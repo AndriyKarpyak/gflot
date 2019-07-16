@@ -26,12 +26,9 @@ package com.googlecode.gflot.client;
 
 import java.util.List;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.googlecode.gflot.client.options.Range;
-import com.googlecode.gflot.client.util.Algorithm;
 
 /**
  * @author Alexander De Leon
@@ -39,285 +36,6 @@ import com.googlecode.gflot.client.util.Algorithm;
 public class PlotWithOverviewModel
     extends PlotModel
 {
-
-    public class PlotWithOverviewSeriesHandler
-        implements SeriesHandler
-    {
-        private AsyncDataProvider provider;
-        private final SeriesHandler overviewHandler;
-        private final SeriesHandler windowHandler;
-        private DataPoint lastDataPoint;
-        private DataPoint firstDataPoint;
-        private boolean lockSelection;
-
-        public PlotWithOverviewSeriesHandler( Series series, SeriesDataStrategy strategy )
-        {
-            provider = new AsyncDataProviderWrapper( new LocalDataProvider( PlotModelStrategy.defaultStrategy() ) );
-            windowHandler = windowModel.addSeries( ( Series ) series.copy(), PlotModelStrategy.copy(strategy) );
-            overviewHandler = overviewModel.addSeries( ( Series ) series.copy(), PlotModelStrategy.copy(strategy) );
-        }
-
-        @Override
-        public void add( DataPoint datapoint )
-        {
-        	provider.add( datapoint );
-        	
-            overviewHandler.add( datapoint );
-            if ( lockSelection && selection[1] < datapoint.getX() )
-            {
-                double diff = datapoint.getX() - lastDataPoint.getX();
-                double x1 = selection[0] + diff;
-                double x2 = selection[1] + diff;
-                setSelection( Math.max( x1, selection[0] ), Math.max( x2, selection[1] ) );
-            }
-            if ( firstDataPoint == null )
-            {
-                firstDataPoint = datapoint;
-            }
-            lastDataPoint = datapoint;
-            
-            if (PlotWithOverviewModel.this.dataMinX == null || PlotWithOverviewModel.this.dataMinX > datapoint.getX())
-            	PlotWithOverviewModel.this.dataMinX = datapoint.getX();
-            if (PlotWithOverviewModel.this.dataMaxX == null || PlotWithOverviewModel.this.dataMaxX < datapoint.getX())
-            	PlotWithOverviewModel.this.dataMaxX = datapoint.getX();
-
-            if (PlotWithOverviewModel.this.dataMinY == null || PlotWithOverviewModel.this.dataMinY > datapoint.getY()) 
-            	PlotWithOverviewModel.this.dataMinY = datapoint.getY();
-            if (PlotWithOverviewModel.this.dataMaxY == null || PlotWithOverviewModel.this.dataMaxY < datapoint.getY())
-            	PlotWithOverviewModel.this.dataMaxY = datapoint.getY();
-        }
-
-        @Override
-        public void clear()
-        {
-            windowHandler.clear();
-            overviewHandler.clear();
-            lastDataPoint = null;
-            firstDataPoint = null;
-            lockSelection = false;
-        }
-
-        @Override
-        public SeriesData getData()
-        {
-            return overviewHandler.getData();
-        }
-
-        @Override
-        public boolean isVisible()
-        {
-            return overviewHandler.isVisible();
-        }
-
-        @Override
-        public void setData( SeriesData newData )
-        {
-            overviewHandler.setData( newData );
-            windowHandler.clear();
-        }
-
-        @Override
-        public void setVisible( boolean visisble )
-        {
-            overviewHandler.setVisible( visisble );
-            windowHandler.setVisible( visisble );
-        }
-
-        public void setDataProvider( AsyncDataProvider provider )
-        {
-            this.provider = provider;
-        }
-
-        void populateWindowSeries( final Command toExcuteAfterSelection )
-        {
-            final double x1 = getWindowMinX();
-            final double x2 = getWindowMaxX();
-            windowHandler.clear();
-            if ( x1 < x2 )
-            {
-                provider.getData( x1, x2, new AsyncCallback<SeriesData>() {
-                    @Override
-                    public void onFailure( Throwable caught )
-                    {
-                        GWT.log( "Failed to obtain data for PlotWithOverview", caught );
-                        if ( toExcuteAfterSelection != null )
-                        {
-                            toExcuteAfterSelection.execute();
-                        }
-                    }
-
-                    @Override
-                    public void onSuccess( SeriesData result )
-                    {
-                        for ( int i = 0; i < result.length(); i++ )
-                        {
-                            windowHandler.add( result.get( i ) );
-                        }
-                        lockSelection = x2 >= lastDataPoint.getX();
-                        if ( toExcuteAfterSelection != null )
-                        {
-                            toExcuteAfterSelection.execute();
-                        }
-                    }
-                } );
-            }
-        }
-
-        private double getWindowMinX()
-        {
-            double x = selection[0];
-            SeriesData data = overviewHandler.getData();
-            int size = data.length();
-            if ( size > 0 && x == data.getX( 0 ) )
-            {
-                return firstDataPoint.getX();
-            }
-            return x;
-        }
-
-        private double getWindowMaxX()
-        {
-            double x = selection[1];
-            SeriesData data = overviewHandler.getData();
-            int size = data.length();
-            if ( size > 0 && x == data.getX( size - 1 ) )
-            {
-                return lastDataPoint.getX();
-            }
-            return x;
-        }
-
-        @Override
-        public Series getSeries()
-        {
-            return getOverviewSeries();
-        }
-
-        public Series getOverviewSeries()
-        {
-            return overviewHandler.getSeries();
-        }
-
-        public SeriesHandler getOverviewSeriesHandler()
-        {
-            return overviewHandler;
-        }
-        
-        public Series getWindowSeries()
-        {
-            return windowHandler.getSeries();
-        }
-        
-        public SeriesHandler getWindowSeriesHandler()
-        {
-            return windowHandler;
-        }
-
-        @Override
-        public boolean equals( Object obj )
-        {
-            if ( obj == this )
-            {
-                return true;
-            }
-            if ( obj instanceof PlotWithOverviewSeriesHandler )
-            {
-                return getSeries().equals( ( (PlotWithOverviewSeriesHandler) obj ).getSeries() );
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return getSeries().hashCode();
-        }
-    }
-
-    public interface DataProvider
-    {
-    	void add(DataPoint datapoint);
-
-    	SeriesData getData( double x1, double x2 );
-    }
-
-    private class LocalDataProvider
-        implements DataProvider
-    {
-
-        private final SeriesDataStrategy strategy;
-
-        public LocalDataProvider( SeriesDataStrategy strategy )
-        {
-            this.strategy = strategy;
-        }
-		
-        @Override
-		public void add(DataPoint datapoint) {
-        	strategy.add(datapoint);
-		}
-        
-        @Override
-        public SeriesData getData( double x1, double x2 )
-        {
-        	SeriesData data = strategy.getData();
-
-            if ( x2 < data.getX( 0 ) || x1 > data.getX( data.length() - 1 ) )
-            {
-                return SeriesData.create();
-            }
-            int start = Algorithm.xBinarySearch( data, x1 );
-            if ( start == -1 )
-            {
-                start = 0;
-            }
-            int end = Algorithm.xBinarySearch( data, x2 );
-            if ( end == -1 )
-            {
-                return data.slice( start );
-            }
-            // slice method doesn't include the end index
-            return data.slice( start, end + 1 );
-        }
-    }
-
-    public interface AsyncDataProvider
-    {
-    	void add(DataPoint datapoint);
-
-    	void getData( double x1, double x2, AsyncCallback<SeriesData> callback );
-    }
-
-    private class AsyncDataProviderWrapper
-        implements AsyncDataProvider
-    {
-        private final DataProvider provider;
-
-        public AsyncDataProviderWrapper( DataProvider provider )
-        {
-            this.provider = provider;
-        }
-
-		@Override
-		public void add(DataPoint datapoint) {
-			provider.add( datapoint );
-		}
-		
-        @Override
-        public void getData( double x1, double x2, AsyncCallback<SeriesData> callback )
-        {
-            try
-            {
-                SeriesData result = provider.getData( x1, x2 );
-                callback.onSuccess( result );
-            }
-            catch ( Throwable e )
-            {
-                callback.onFailure( e );
-            }
-        }
-    }
-
     private static class PopulateCommand
         implements Command
     {
@@ -347,10 +65,6 @@ public class PlotWithOverviewModel
 
     private final PlotModel windowModel;
     private final PlotModel overviewModel;
-    private Double dataMinX;
-    private Double dataMaxX;
-    private Double dataMinY;
-    private Double dataMaxY;
     private final double[] selection = new double[2];
 
     public PlotWithOverviewModel()
@@ -359,20 +73,13 @@ public class PlotWithOverviewModel
         windowModel = new PlotModel();
     }
 
-    public void setDataProvider( PlotWithOverviewSeriesHandler handler, DataProvider provider )
-    {
-        setDataProvider( handler, new AsyncDataProviderWrapper( provider ) );
-    }
-
-    public void setDataProvider( PlotWithOverviewSeriesHandler handler, AsyncDataProvider provider )
-    {
-        handler.setDataProvider( provider );
-    }
-
     @Override
     protected PlotWithOverviewSeriesHandler createSeriesHandler( Series series, SeriesDataStrategy strategy )
     {
-        return new PlotWithOverviewSeriesHandler( series, strategy );
+        return new PlotWithOverviewSeriesHandler( series, strategy,
+        		windowModel.addSeries( ( Series ) series.copy(), PlotModelStrategy.defaultStrategy() ),
+				overviewModel.addSeries( ( Series ) series.copy(), PlotModelStrategy.defaultStrategy() )
+				);
     }
 
     public PlotModel getWindowPlotModel()
@@ -413,6 +120,7 @@ public class PlotWithOverviewModel
 
         for ( PlotWithOverviewSeriesHandler handler : getHandlers() )
         {
+        	handler.setSelection(selection);
             handler.populateWindowSeries( command );
         }
     }
@@ -422,43 +130,116 @@ public class PlotWithOverviewModel
         return selection;
     }
 
-    public Range getXDataRange() {
-    	if (dataMinX == null || dataMaxX == null) {
-			return null;
-		}
+    /**
+     * Get range representing min. and max. data points of X data set.
+     * 
+     * @return {@link Range} - range representing min. and max. data points of X data set.
+     */
+    public Range getXDataRange()
+    {
+    	return getXDataRange(0);
+    }
+
+    /**
+     * Get range representing min. and max. data points of X data set for specified axis index.
+     * 
+     * @param axis - index of axis starting from 1. If value is less then 1 then min., max. for complete data set will be returned.
+     * @return {@link Range} - range representing min. and max. data points of X data set.
+     */
+    public Range getXDataRange(int axis)
+    {
+    	Double dataMinX = null;
+		Double dataMaxX = null;
+		
+		for ( PlotWithOverviewSeriesHandler handler : getHandlers() )
+        {
+			if (handler.getOverviewSeries().getXAxis() == axis || axis < 1) {
+				double localMin = handler.getDataMinX();
+				if (dataMinX == null || dataMinX >= localMin)
+				{
+					dataMinX = localMin;
+				}
+				
+				double localMax = handler.getDataMaxX();
+				if (dataMaxX == null || dataMaxX <= localMax)
+				{
+					dataMaxX = localMax;
+				}
+			}
+        }
     	return Range.of(dataMinX, dataMaxX);
     }
 
-    public Range getYDataRange() {
-    	if (dataMinY == null || dataMaxY == null) {
-			return null;
-		}
+    /**
+     * Get range representing min. and max. data points of Y data set.
+     * 
+     * @return {@link Range} - range representing min. and max. data points of Y data set.
+     */
+    public Range getYDataRange()
+    {
+    	return getYDataRange(0);
+    }
+
+    /**
+     * Get range representing min. and max. data points of Y data set for specified axis index.
+     * 
+     * @param axis - index of axis starting from 1. If value is less then 1 then min., max. for complete data set will be returned.
+     * @return {@link Range} - range representing min. and max. data points of Y data set.
+     */
+    public Range getYDataRange(int axis)
+    {
+    	Double dataMinY = null;
+    	Double dataMaxY = null;
+    	
+		for ( PlotWithOverviewSeriesHandler handler : getHandlers() )
+        {
+			if (handler.getOverviewSeries().getYAxis() == axis || axis < 1) {
+				double localMin = handler.getDataMinY();
+				if (dataMinY == null || dataMinY >= localMin)
+				{
+					dataMinY = localMin;
+				}
+				
+				double localMax = handler.getDataMaxY();
+				if (dataMaxY == null || dataMaxY <= localMax)
+				{
+					dataMaxY = localMax;
+				}
+			}
+        }
     	return Range.of(dataMinY, dataMaxY);
     }
 
     @Override
     public void removeSeries( int index )
     {
-        super.removeSeries( index );
         windowModel.removeSeries( index );
         overviewModel.removeSeries( index );
+        super.removeSeries( index );
     }
 
     @Override
     public void removeSeries( SeriesHandler series )
     {
-        super.removeSeries( series );
         windowModel.removeSeries( series );
         overviewModel.removeSeries( series );
+        super.removeSeries( series );
     }
 
     @Override
     public void removeAllSeries()
     {
-        super.removeAllSeries();
         windowModel.removeAllSeries();
         overviewModel.removeAllSeries();
+        super.removeAllSeries();
     }
+
+	public void push() {
+        for ( PlotWithOverviewSeriesHandler handler : getHandlers() )
+        {
+            handler.populateOverviewSeries();
+        }
+	}
 
     @SuppressWarnings( "unchecked" )
     @Override
@@ -466,5 +247,4 @@ public class PlotWithOverviewModel
     {
         return (List<PlotWithOverviewSeriesHandler>) super.getHandlers();
     }
-
 }

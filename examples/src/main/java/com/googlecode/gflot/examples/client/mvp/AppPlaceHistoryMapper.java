@@ -3,6 +3,7 @@ package com.googlecode.gflot.examples.client.mvp;
 import com.google.gwt.place.shared.Place;
 import com.googlecode.gflot.examples.client.examples.bar.BarPlace;
 import com.googlecode.gflot.examples.client.examples.categories.CategoriesPlace;
+import com.googlecode.gflot.examples.client.examples.dashedlines.DashedLinesPlace;
 import com.googlecode.gflot.examples.client.examples.decimation.DecimationPlace;
 import com.googlecode.gflot.examples.client.examples.errorbars.bar.ErrorBarsPlace;
 import com.googlecode.gflot.examples.client.examples.export.ExportPlace;
@@ -110,6 +111,10 @@ public class AppPlaceHistoryMapper
         {
             return new CategoriesPlace();
         }
+        else if ( token.startsWith( NameTokens.DASHED_LINES ) )
+        {
+            return new DashedLinesPlace();
+        }
         else
         {
             return null;
@@ -199,6 +204,10 @@ public class AppPlaceHistoryMapper
         else if ( place instanceof CategoriesPlace )
         {
             return NameTokens.CATEGORIES_BARS;
+        }
+        else if ( place instanceof DashedLinesPlace )
+        {
+            return NameTokens.DASHED_LINES;
         }
         else
         {

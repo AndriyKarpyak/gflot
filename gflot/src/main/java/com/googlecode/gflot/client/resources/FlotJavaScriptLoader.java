@@ -93,6 +93,8 @@ public class FlotJavaScriptLoader
         PluginLoader getFlotErrorBarsLoader();
 
         PluginLoader getFlotCategoriesLoader();
+
+        PluginLoader getFlotDashedLinesLoader();
     }
 
     public static class SynchronousImpl
@@ -144,6 +146,7 @@ public class FlotJavaScriptLoader
 
         private PluginLoader flotCategoriesLoader;
 
+        private PluginLoader flotDashedLinesLoader;
         @Override
         public void loadRequiredFlotLibrary( final FlotJavaScriptCallback callback )
         {
@@ -375,6 +378,15 @@ public class FlotJavaScriptLoader
             return flotCategoriesLoader;
         }
 
+        @Override
+        public PluginLoader getFlotDashedLinesLoader()
+        {
+            if ( null == flotDashedLinesLoader )
+            {
+                flotDashedLinesLoader = GWT.create( FlotDashedLinesLoader.class );
+            }
+            return flotDashedLinesLoader;
+        }
         private void load()
         {
             getJqueryLoader().load();
@@ -399,6 +411,7 @@ public class FlotJavaScriptLoader
             getFlotCanvasLoader().load();
             getFlotErrorBarsLoader().load();
             getFlotCategoriesLoader().load();
+            getFlotDashedLinesLoader().load();
         }
     }
 }
